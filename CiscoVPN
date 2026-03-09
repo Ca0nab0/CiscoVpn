@@ -1,0 +1,1449 @@
+**************************************IPSEC - IKEv1 - Politicas ***************************************************
+Enable
+conf t
+Hostname P1-Outsider
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+int F0/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+-------------------------------------------------------------------------
+enable
+
+configure terminal
+hostname P1-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname P1-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 2
+ lifetime 86400
+crypto isakmp key CISCO123 address 2.2.2.1
+
+access-list 100 permit ip 10.3.75.0 0.0.0.255 10.3.76.0 0.0.0.255
+
+crypto ipsec transform-set ESP-AES-SHA esp-aes esp-sha-hmac
+ mode tunnel
+
+crypto map CMAP_VPN 10 ipsec-isakmp 
+ set peer 2.2.2.1
+ set transform-set ESP-AES-SHA 
+ match address 100
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ crypto map CMAP_VPN
+ no shutdown
+
+interface FastEthernet3/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+hostname P1-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 2
+ lifetime 86400
+crypto isakmp key CISCO123 address 2.2.2.1
+
+access-list 100 permit ip 10.3.75.0 0.0.0.255 10.3.76.0 0.0.0.255
+
+crypto ipsec transform-set ESP-AES-SHA esp-aes esp-sha-hmac
+ mode tunnel
+
+crypto map CMAP_VPN 10 ipsec-isakmp 
+ set peer 2.2.2.1
+ set transform-set ESP-AES-SHA 
+ match address 100
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ crypto map CMAP_VPN
+ no shutdown
+
+interface FastEthernet3/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+
+**************************************IPSEC - IKEv1 - Enrutamiento ***************************************************
+Enable
+conf t
+Hostname R1-Outsider
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+int G1/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname R1-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname R1-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha
+ authentication pre-share
+ group 14
+crypto isakmp key CISCO_PWD address 2.2.2.1
+crypto ipsec transform-set SET1 esp-aes 256 esp-sha-hmac
+ mode tunnel
+
+crypto IPsec profile VTI_PROFILE
+set transform-set SET1
+interface TUNNEL0
+ip add 10.0.0.1 255.255.255.252
+tunnel source G1/0
+tunnel destination 2.2.2.1
+tunnel mode IPsec ipv4
+tunnel protection IPsec profile VTI_PROFILE
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+IP ROUTE 10.3.76.0 255.255.255.0 Tunnel0
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+Hostname R1-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha
+ authentication pre-share
+ group 14
+
+crypto isakmp key CISCO_PWD address 1.1.1.1
+
+crypto ipsec transform-set SET1 esp-aes 256 esp-sha-hmac 
+ mode tunnel
+
+crypto ipsec profile VTI_PROFILE
+ set transform-set SET1
+
+interface Tunnel0
+ ip address 10.0.0.2 255.255.255.252
+ tunnel source GigabitEthernet1/0
+ tunnel destination 1.1.1.1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile VTI_PROFILE
+
+interface GigabitEthernet1/0
+ ip address 2.2.2.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.76.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+IP ROUTE 10.3.75.0 255.255.255.0 Tunnel0
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnr3
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+
+end
+write memory
+
+**************************************IPSEC - IKEv1 - TUNNEL GRE ***************************************************
+Enable
+conf t
+Hostname T1-Outsider
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+int G1/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+----------------------------------------------------------------------------
+enable
+configure terminal
+hostname T1-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname T1-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha
+ authentication pre-share
+ group 14
+crypto isakmp key CISCO_gre address 2.2.2.1
+
+crypto ipsec transform-set TS-GRE esp-aes 256 esp-sha-hmac
+ mode transport
+
+crypto IPsec profile gre
+set transform-set TS-GRE
+interface TUNNEL0
+ip add 10.0.0.1 255.255.255.252
+tunnel source G1/0
+tunnel destination 2.2.2.1
+tunnel protection IPsec profile gre
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+ip route 10.3.76.0 255.255.255.0 10.0.0.2
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+hostname T1-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha
+ authentication pre-share
+ group 14
+
+crypto isakmp key CISCO_gre address 1.1.1.1
+
+crypto ipsec transform-set TS-GRE esp-aes 256 esp-sha-hmac
+ mode transport
+
+crypto IPsec profile gre
+set transform-set TS-GRE
+
+interface Tunnel0
+ ip address 10.0.0.2 255.255.255.252
+ tunnel source GigabitEthernet1/0
+ tunnel destination 1.1.1.1
+ tunnel protection ipsec profile gre
+
+interface GigabitEthernet1/0
+ ip address 2.2.2.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.76.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+IP ROUTE 10.3.75.0 255.255.255.0 10.0.0.1
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnr3
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+
+end
+write memory
+
+**************************************IPSEC - IKEv2 - Politicas ***************************************************
+Enable
+conf t
+Hostname P2-Outsider
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+int G1/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+----------------------------------------------------------------
+enable
+configure terminal
+hostname P2-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+Hostname R2-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP_A 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL_A
+ proposal PROP_A
+
+crypto ikev2 keyring K_RING
+ peer PEER-B
+  address 2.2.2.1
+  pre-shared-key local CISCO123
+  pre-shared-key remote CISCO123
+
+crypto ikev2 profile PROF_A
+match identity remote address 2.2.2.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local K_RING
+
+access-list 100 permit ip 10.3.75.0 0.0.0.255 10.3.76.0 0.0.0.255
+
+crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac 
+ mode tunnel
+
+crypto map CMAP_V2 10 ipsec-isakmp 
+ set peer 2.2.2.1
+ set transform-set TSET 
+ set ikev2-profile PROF_A
+ match address 100
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ crypto map CMAP_V2
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+hostname P2-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP_B
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL_B
+ proposal PROP_B
+
+crypto ikev2 keyring K_RING
+ peer PEER-A
+  address 1.1.1.1
+  pre-shared-key local CISCO123
+  pre-shared-key remote CISCO123
+
+crypto ikev2 profile PROF_B
+ match identity remote address 1.1.1.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local K_RING
+
+access-list 100 permit ip 10.3.76.0 0.0.0.255 10.3.75.0 0.0.0.255
+
+crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac
+mode tunnel
+
+crypto map CMAP_V2 10 ipsec-isakmp 
+ set peer 1.1.1.1
+ set transform-set TSET 
+ set ikev2-profile PROF_B
+ match address 100
+
+interface GigabitEthernet1/0
+ ip address 2.2.2.1 255.255.255.252
+ crypto map CMAP_V2
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.76.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnr3
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+
+end
+write memory
+
+**************************************IPSEC - IKEv2 - Enrutamiento ***************************************************
+Enable
+conf t
+Hostname R2-Outsider
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+int G1/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+----------------------------------------------------------------------------
+enable
+configure terminal
+hostname R2-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname R2-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP-V2 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL-V2
+ proposal PROP-V2
+crypto ikev2 keyring KEYS
+ peer PEER-B
+  address 2.2.2.1
+  pre-shared-key local CISCO_VTI
+  pre-shared-key remote CISCO_VTI
+
+crypto ikev2 profile PROF-V2
+
+ match identity remote address 2.2.2.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEYS
+
+crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac 
+ mode tunnel
+
+crypto ipsec profile IPSEC-VTI
+ set transform-set TSET
+ set ikev2-profile PROF-V2
+
+interface Tunnel0
+ ip address 10.0.0.1 255.255.255.252
+ tunnel source GigabitEthernet1/0
+ tunnel destination 2.2.2.1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-VTI
+no sh
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+IP ROUTE 10.3.76.0 255.255.255.0 Tunnel0
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+hostname R2-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP-V2 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL-V2
+ proposal PROP-V2
+
+crypto ikev2 keyring KEYS
+ peer PEER-A
+  address 1.1.1.1
+  pre-shared-key local CISCO_VTI
+  pre-shared-key remote CISCO_VTI
+
+crypto ikev2 profile PROF-V2
+ match identity remote address 1.1.1.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEYS
+
+crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac 
+ mode tunnel
+
+crypto ipsec profile IPSEC-VTI
+ set transform-set TSET
+ set ikev2-profile PROF-V2
+
+interface Tunnel0
+ ip address 10.0.0.2 255.255.255.252
+ tunnel source GigabitEthernet1/0
+ tunnel destination 1.1.1.1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-VTI
+no sh
+
+interface GigabitEthernet1/0
+ ip address 2.2.2.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.76.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+IP ROUTE 10.3.75.0 255.255.255.0 Tunnel0
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnr3
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+
+end
+write memory
+
+**************************************IPSEC - IKEv2 - TUNNEL GRE ***************************************************
+Enable
+conf t
+Hostname T2-Outsider
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+int G1/0
+ip add 3.3.3.1 255.255.255.252
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname T2-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ip address 1.1.1.2 255.255.255.252
+no shutdown
+interface g2/0
+ip address 2.2.2.2 255.255.255.252
+no shutdown
+int g3/0
+ip add 3.3.3.2 255.255.255.252
+no sh
+!
+ip route 1.1.1.0 255.255.255.252 1.1.1.1
+ip route 2.2.2.0 255.255.255.252 2.2.2.1
+ip route 3.3.3.0 255.255.255.252 3.3.3.1
+
+end
+write memory
+-----------------------------------------------------------------------------
+enable
+configure terminal
+hostname T2-Peer1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP-GRE 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL-GRE
+ proposal PROP-GRE
+
+crypto ikev2 keyring KEY-GRE
+ peer PEER-B
+  address 2.2.2.1
+  pre-shared-key local CISCO_GRE_V2
+  pre-shared-key remote CISCO_GRE_V2
+
+crypto ikev2 profile PROF-GRE
+ match identity remote address 2.2.2.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEY-GRE
+crypto ipsec transform-set TSET-GRE esp-aes 256 esp-sha256-hmac 
+ mode transport
+
+crypto ipsec profile PROTECT-GRE-V2
+ set transform-set TSET-GRE
+ set ikev2-profile PROF-GRE
+
+interface TUNNEL0
+ip add 10.0.0.1 255.255.255.252
+tunnel source G1/0
+tunnel destination 2.2.2.1
+tunnel protection IPsec profile PROTECT-GRE-V2
+
+interface GigabitEthernet1/0
+ ip address 1.1.1.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.75.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+ip route 10.3.76.0 255.255.255.0 10.0.0.2
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnr2
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+end
+write memory
+---------------------------------------------------------------------------
+enable
+configure terminal
+hostname T2-Peer2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP-GRE 
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL-GRE
+ proposal PROP-GRE
+
+crypto ikev2 keyring KEY-GRE
+ peer PEER-A
+  address 1.1.1.1
+  pre-shared-key local CISCO_GRE_V2
+  pre-shared-key remote CISCO_GRE_V2
+
+crypto ikev2 profile PROF-GRE
+ match identity remote address 1.1.1.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEY-GRE
+
+crypto ipsec transform-set TSET-GRE esp-aes 256 esp-sha256-hmac 
+ mode transport
+
+crypto ipsec profile PROTECT-GRE-V2
+ set transform-set TSET-GRE
+ set ikev2-profile PROF-GRE
+
+interface Tunnel0
+ ip address 10.0.0.2 255.255.255.252
+ tunnel source GigabitEthernet1/0
+ tunnel destination 1.1.1.1
+ tunnel protection ipsec profile PROTECT-GRE-V2
+
+interface GigabitEthernet1/0
+ ip address 2.2.2.1 255.255.255.252
+ no shutdown
+
+interface FastEthernet0/0
+ ip address 10.3.76.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+IP ROUTE 10.3.75.0 255.255.255.0 10.0.0.1
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnr3
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+
+end
+write memory
+
+
+/////////////////////DMVPN//////////////////////////
+Enable
+CONF T
+Hostname V1-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+interface g1/0
+ ip address 1.1.1.2 255.255.255.0
+ no shutdown
+
+interface g2/0
+ ip address 2.2.2.2 255.255.255.0
+ no shutdown
+
+interface g3/0
+ ip address 3.3.3.2 255.255.255.0
+no sh
+
+---------------------------------------------------------------------
+Enable
+conf t
+hostname V1-HUB
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 2
+
+crypto isakmp key CISCO_DMVPN address 0.0.0.0
+
+crypto ipsec transform-set TS esp-aes esp-sha-hmac
+ mode transport
+
+crypto ipsec profile DMVPN_PROFILE
+ set transform-set TS
+interface Tunnel0
+ ip address 172.16.0.1 255.255.255.0
+ no ip redirects
+ ip nhrp authentication cisco123
+ ip nhrp map multicast dynamic
+ ip nhrp network-id 1
+ tunnel source g1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile DMVPN_PROFILE
+
+interface g1/0
+ ip address 1.1.1.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+int f0/0
+ip add 10.3.75.1 255.255.255.0
+no sh
+router eigrp 100
+ network 172.16.0.0 0.0.0.255
+ network 10.3.75.0
+ no auto-summary
+interface Tunnel0
+ no ip split-horizon eigrp 100
+
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnHUB
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+-----------------------------------------------------
+Enable
+Conf t
+hostname V1-SPOKE-1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 2
+
+crypto isakmp key CISCO_DMVPN address 1.1.1.1
+
+crypto ipsec transform-set TS esp-aes esp-sha-hmac
+ mode transport
+
+crypto ipsec profile DMVPN_PROFILE
+ set transform-set TS
+
+interface Tunnel0
+ ip address 172.16.0.2 255.255.255.0
+ ip nhrp authentication cisco123
+ ip nhrp network-id 1
+ ip nhrp nhs 172.16.0.1 nbma 1.1.1.1 multicast
+ tunnel source g1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile DMVPN_PROFILE
+
+interface g1/0
+ ip address 2.2.2.1 255.255.255.0
+ no shutdown
+
+int f0/0
+ip add 10.3.76.1 255.255.255.0
+no sh
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+
+router eigrp 100
+ network 172.16.0.0 0.0.0.255
+ network 10.3.76.0
+ no auto-summary
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnsp1
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+--------------------------------------------------
+enable
+Conf t
+hostname V1-SPOKE-2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 2
+
+crypto isakmp key CISCO_DMVPN address 1.1.1.1
+
+crypto ipsec transform-set TS esp-aes esp-sha-hmac
+ mode transport
+
+crypto ipsec profile DMVPN_PROFILE
+ set transform-set TS
+
+interface Tunnel0
+ ip address 172.16.0.3 255.255.255.0
+ ip nhrp authentication cisco123
+ ip nhrp network-id 1
+ ip nhrp nhs 172.16.0.1 nbma 1.1.1.1 multicast
+ tunnel source g1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile DMVPN_PROFILE
+
+interface g1/0
+ ip address 3.3.3.1 255.255.255.0
+ no shutdown
+
+int f0/0
+ip add 10.3.77.1 255.255.255.0
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+
+router eigrp 100
+ network 172.16.0.0 0.0.0.255
+ network 10.3.77.0
+ no auto-summary
+
+ip dhcp excluded-address 10.3.77.1
+ip dhcp pool vpnsp1
+ network 10.3.77.0 255.255.255.0
+ default-router 10.3.77.1
+
+****************************************DMVPNv2************************************************************
+Enable
+CONF T
+Hostname V2-ISP
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+interface g1/0
+ ip address 1.1.1.2 255.255.255.0
+ no shutdown
+
+interface g2/0
+ ip address 2.2.2.2 255.255.255.0
+ no shutdown
+
+interface g3/0
+ ip address 3.3.3.2 255.255.255.0
+no sh
+
+---------------------------------------------------------------------
+Enable
+conf t
+hostname V2-HUB
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP_DMVPN
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL_DMVPN
+ proposal PROP_DMVPN
+
+crypto ikev2 keyring KEYS
+ peer ANY_SPOKE
+  address 0.0.0.0 0.0.0.0
+  pre-shared-key local CISCO_DMVPN_V3
+  pre-shared-key remote CISCO_DMVPN_V3
+
+crypto ikev2 profile PROF_DMVPN
+ match identity remote address 0.0.0.0
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEYS
+
+crypto ipsec transform-set TS_DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+
+crypto ipsec profile IPSEC_PROF
+ set transform-set TS_DMVPN
+ set ikev2-profile PROF_DMVPN
+interface Tunnel0
+ ip address 172.16.0.1 255.255.255.0
+ no ip redirects
+ ip nhrp authentication cisco123
+ ip nhrp map multicast dynamic
+ ip nhrp network-id 1
+ ip nhrp shortcut
+ tunnel source GigabitEthernet1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile IPSEC_PROF
+
+interface g1/0
+ ip address 1.1.1.1 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 1.1.1.2
+int f0/0
+ip add 10.3.75.1 255.255.255.0
+no sh
+
+router ospf 1
+ network 172.16.0.0 0.0.0.255 area 0
+ network 10.3.75.0 0.0.0.255 area 0
+
+interface Tunnel0
+ ip ospf network broadcast
+ ip ospf priority 255
+
+ip dhcp excluded-address 10.3.75.1
+ip dhcp pool vpnHUB
+ network 10.3.75.0 255.255.255.0
+ default-router 10.3.75.1
+
+-----------------------------------------------------
+Enable
+Conf t
+hostname V2-SPOKE-1
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP_DMVPN
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL_DMVPN
+ proposal PROP_DMVPN
+
+crypto ikev2 keyring KEYS
+ peer HUB
+  address 1.1.1.1
+  pre-shared-key local CISCO_DMVPN_V3
+  pre-shared-key remote CISCO_DMVPN_V3
+
+crypto ikev2 profile PROF_DMVPN
+ match identity remote address 1.1.1.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEYS
+
+crypto ipsec transform-set TS_DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+
+crypto ipsec profile IPSEC_PROF
+ set transform-set TS_DMVPN
+ set ikev2-profile PROF_DMVPN
+
+interface Tunnel0
+ ip address 172.16.0.2 255.255.255.0
+ ip nhrp authentication cisco123
+ ip nhrp network-id 1
+ ip nhrp nhs 172.16.0.1 nbma 1.1.1.1 multicast
+ ip nhrp shortcut
+ tunnel source GigabitEthernet1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile IPSEC_PROF
+
+interface g1/0
+ ip address 2.2.2.1 255.255.255.0
+ no shutdown
+
+int f0/0
+ip add 10.3.76.1 255.255.255.0
+no sh
+ip route 0.0.0.0 0.0.0.0 2.2.2.2
+
+router ospf 1
+ network 172.16.0.0 0.0.0.255 area 0
+ network 10.3.76.0 0.0.0.255 area 0
+
+interface Tunnel0
+ ip ospf network broadcast
+ ip ospf priority 0
+
+ip dhcp excluded-address 10.3.76.1
+ip dhcp pool vpnsp1
+ network 10.3.76.0 255.255.255.0
+ default-router 10.3.76.1
+--------------------------------------------------
+Enable
+Conf t
+hostname V2-SPOKE-2
+
+user EB0375 privilege 15 secret Itla0375
+service password-encryption
+enable secret Itla1234
+line vty 0 4
+password Cisco0375
+transport input ssh
+login local
+no transport input telnet
+exit
+
+crypto ikev2 proposal PROP_DMVPN
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+
+crypto ikev2 policy POL_DMVPN
+ proposal PROP_DMVPN
+
+crypto ikev2 keyring KEYS
+ peer HUB
+  address 1.1.1.1
+  pre-shared-key local CISCO_DMVPN_V3
+  pre-shared-key remote CISCO_DMVPN_V3
+
+crypto ikev2 profile PROF_DMVPN
+ match identity remote address 1.1.1.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KEYS
+
+crypto ipsec transform-set TS_DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+
+crypto ipsec profile IPSEC_PROF
+ set transform-set TS_DMVPN
+ set ikev2-profile PROF_DMVPN
+
+interface Tunnel0
+ ip address 172.16.0.3 255.255.255.0
+ ip nhrp authentication cisco123
+ ip nhrp network-id 1
+ ip nhrp nhs 172.16.0.1 nbma 1.1.1.1 multicast
+ ip nhrp shortcut
+ tunnel source GigabitEthernet1/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile IPSEC_PROF
+
+interface g1/0
+ ip address 3.3.3.1 255.255.255.0
+ no shutdown
+
+int f0/0
+ip add 10.3.77.1 255.255.255.0
+no sh
+ip route 0.0.0.0 0.0.0.0 3.3.3.2
+
+router ospf 1
+ network 172.16.0.0 0.0.0.255 area 0
+ network 10.3.77.0 0.0.0.255 area 0
+
+interface Tunnel0
+ ip ospf network broadcast
+ ip ospf priority 0
+
+ip dhcp excluded-address 10.3.77.1
+ip dhcp pool vpnsp1
+ network 10.3.77.0 255.255.255.0
+ default-router 10.3.77.1
